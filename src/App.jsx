@@ -105,7 +105,7 @@ export default function App(){
   const phrase = state.chain.map(c=>c.text).join(' ')
   const nextTitle = state.chain.length ? `${state.baseName} ${state.chain[state.chain.length-1].text}` : state.baseName
   const canStart = state.activities.length >= 2
-  // Ensure visibility and focus when returning to Add
+  // Focus & scroll to Add card when entering ADD
   useEffect(()=>{
     if(state.stage === Stage.Add){
       setTimeout(()=>{
@@ -286,8 +286,16 @@ function TitleCard({onConfirm}){
 
 function ActivityInput({onAdd, idx, disabled=false}){
   const [v, setV] = useState('')
+  const submit = (e) => {
+    e.preventDefault()
+    if(disabled) return
+    const t = sanitize(v)
+    if(!t) return
+    onAdd(t)
+    setV('')
+  }
   return (
-    <form onSubmit={(e)=>{ e.preventDefault(); if(disabled) return; const t=sanitize(v); if(!t) return; onAdd(t); setV('') }}>
+    <form onSubmit={submit}>
       <input
         id="activity-input"
         className="input"

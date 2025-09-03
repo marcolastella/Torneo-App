@@ -204,7 +204,4 @@ header{
 .glassRainbow .input::placeholder{ color: rgba(15,17,23,.6) !important; }
 @keyframes wordIn{ from{ transform: translateY(6px) scale(.98); opacity:0 } to{ transform: translateY(0) scale(1); opacity:1 } }
 
-.discardList{
-  display:flex; flex-wrap:wrap; gap:8px;
-  max-height: 140px; overflow:auto; padding-right:6px;
-}
+.discardList{ display:flex; flex-wrap:wrap; gap:8px; max-height:140px; overflow:auto; padding-right:6px }
