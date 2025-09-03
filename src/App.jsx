@@ -38,7 +38,7 @@ function chipFor(index){
   return `linear-gradient(135deg, hsla(${start},90%,60%,.18), hsla(${end},90%,55%,.12))`
 }
 
-function Confetti(){
+function Confetti({dense=false}){
   const ref = useRef(null)
   useEffect(()=>{
     const c = ref.current; if(!c) return
@@ -46,7 +46,8 @@ function Confetti(){
     const ctx = c.getContext('2d')
     const resize = ()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0) }
     resize(); addEventListener('resize', resize, {passive:true})
-    const parts = Array.from({length:180},()=>({x:innerWidth/2,y:innerHeight*.3,r:Math.random()*3+2,
+    const count = dense ? 420 : 180;
+    const parts = Array.from({length:count},()=>({x:innerWidth/2,y:innerHeight*.3,r:Math.random()*3+2,
       vx:(Math.random()*2-1)*6,vy:Math.random()*-8-6,rot:Math.random()*Math.PI,vr:(Math.random()-.5)*.4,
       hue:Math.floor(Math.random()*360),life:0,max:120+Math.random()*40}))
     let frame=0, raf
@@ -77,7 +78,9 @@ function Fanfare(){
       const noiseDur=.4, buffer=ctx.createBuffer(1,ctx.sampleRate*noiseDur,ctx.sampleRate)
       const data=buffer.getChannelData(0); for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,3)
       const noise=ctx.createBufferSource(); noise.buffer=buffer; const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=4000; bp.Q.value=3
-      const ng=ctx.createGain(); ng.gain.value=.3; noise.connect(bp); bp.connect(ng); ng.connect(master); noise.start(t)
+      const ng=ctx.createGain(); ng.gain.value=.3; noise.connect(bp); bp.connect(ng); ng.connect(master); noise.start(t);
+      // cymbal burst
+      const cym = ctx.createOscillator(); const cg = ctx.createGain(); cym.type='square'; cym.frequency.value=800; cg.gain.setValueAtTime(.0001,t); cg.gain.exponentialRampToValueAtTime(.6,t+.02); cg.gain.exponentialRampToValueAtTime(.0001,t+.35); cym.connect(cg); cg.connect(master); cym.start(t); cym.stop(t+.35)
     }catch{}
   },[])
   return null
@@ -169,13 +172,13 @@ export default function App(){
     <div>
       <div id="backdrop" className="backdrop" />
       <div className="noise" />
-      <header><div className="appTitle">Torneo Attività</div></header>
+      <header><div className="brand"><div className="brandIcon"/><div className="brandText">Torneo Attività</div></div></header>
       <main className="container">
 
         {state.stage === Stage.Title && <TitleCard onConfirm={onConfirmTitle} />}
 
         {state.stage !== Stage.Title && (
-          <h1 className="title">{state.chain.length ? nextTitle : state.baseName}</h1>
+          <h1 className="title">{state.baseName}</h1>
         )}
 
         {(state.stage === Stage.Add || state.stage === Stage.Play) && state.chain.length > 0 && (
@@ -229,7 +232,8 @@ export default function App(){
         {state.stage === Stage.Final && (
           <section className="card finalWrap" style={{padding:16}}>
             <SuspenseBlast />
-            <h2 className="title">{phrase || state.baseName}</h2>
+            <div className="fireGlow" />
+            <h2 className="finalTitle">{(phrase || state.baseName)}</h2>
             <div style={{display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center'}}>
               {state.chain.map((w,i)=> (
                 <span key={i} className="chip" style={{background: chipFor(w.themeIndex)}}>{w.text}</span>
