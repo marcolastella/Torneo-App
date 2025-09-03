@@ -105,6 +105,20 @@ export default function App(){
   const phrase = state.chain.map(c=>c.text).join(' ')
   const nextTitle = state.chain.length ? `${state.baseName} ${state.chain[state.chain.length-1].text}` : state.baseName
   const canStart = state.activities.length >= 2
+  // Ensure visibility and focus when returning to Add
+  useEffect(()=>{
+    if(state.stage === Stage.Add){
+      setTimeout(()=>{
+        try{
+          const el = document.getElementById('addCard')
+          if(el) el.scrollIntoView({behavior:'smooth', block:'start'})
+          const inp = document.getElementById('activity-input')
+          if(inp) inp.focus()
+        }catch{}
+      }, 40)
+    }
+  }, [state.stage, state.roundIndex])
+
 
   useEffect(()=>{
     if(state.stage !== Stage.Play) return
@@ -190,7 +204,7 @@ export default function App(){
         )}
 
         {state.stage === Stage.Add && (
-          <section className="card cardRainbow" style={{padding:16, display:'grid', gap:16}}>
+          <section id="addCard" className="card cardRainbow" style={{padding:16, display:'grid', gap:16}}>
             <form onSubmit={(e)=> e.preventDefault()} style={{display:'grid', gap:8}}>
               <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} /></div></div>
             </form>
@@ -273,7 +287,7 @@ function ActivityInput({onAdd, idx}){
   const [v, setV] = useState('')
   return (
     <form onSubmit={(e)=>{ e.preventDefault(); const t=sanitize(v); if(!t) return; onAdd(t); setV('') }}>
-      <input className="input" placeholder={`Attività #${idx} — premi Invio`}
+      <input id="activity-input" className="input" placeholder={`Attività #${idx} — premi Invio`}
              value={v} onChange={e=>setV(e.target.value)}
              enterKeyHint="done" inputMode="text" />
     </form>
