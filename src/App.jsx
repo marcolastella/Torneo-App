@@ -203,23 +203,23 @@ export default function App(){
           </section>
         )}
 
-        {state.stage === Stage.Add && (
+        {(state.stage === Stage.Add || state.stage === Stage.Play) && (
           <section id="addCard" className="card cardRainbow" style={{padding:16, display:'grid', gap:16}}>
             <form onSubmit={(e)=> e.preventDefault()} style={{display:'grid', gap:8}}>
-              <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} /></div></div>
+              <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} disabled={state.stage===Stage.Play} /></div></div>
             </form>
             <div style={{display:'grid', gap:10}}>
               {state.activities.map((a, i)=> (
                 <div className="item activityPill" key={i}>
                   <div className="itemText">{a}</div>
-                  <button className="btn" onClick={()=>removeActivity(i)} aria-label="Rimuovi">Rimuovi</button>
+                  <button className="btn" onClick={()=>removeActivity(i)} aria-label="Rimuovi" disabled={state.stage===Stage.Play}>Rimuovi</button>
                 </div>
               ))}
             </div>
             <ActivityInput onAdd={addActivity} idx={state.activities.length+1} />
             <div className="row">
               <button className="btn btn-danger" onClick={()=> setState(s=>({...s, stage:Stage.Final}))}>Termina torneo</button>
-              <button className="btn btn-success" onClick={startTournament} disabled={!canStart}>Inizia il torneo</button>
+              <button className="btn btn-success" onClick={startTournament} disabled={!canStart || state.stage===Stage.Play}>Inizia il torneo</button>
             </div>
           </section>
         )}
@@ -287,7 +287,7 @@ function ActivityInput({onAdd, idx}){
   const [v, setV] = useState('')
   return (
     <form onSubmit={(e)=>{ e.preventDefault(); const t=sanitize(v); if(!t) return; onAdd(t); setV('') }}>
-      <input id="activity-input" className="input" placeholder={`Attività #${idx} — premi Invio`}
+      <input id="activity-input" className="input" placeholder={`Attività #${idx} — premi Invio`} disabled={state.stage===Stage.Play}
              value={v} onChange={e=>setV(e.target.value)}
              enterKeyHint="done" inputMode="text" />
     </form>
