@@ -115,14 +115,16 @@ export default function App(){
       if(!state.champion) return
       if(state.restQueue.length === 0){
         const winner = state.champion
+        const composed = (state.roundBoxTitle && state.roundBoxTitle.trim()) ? `${state.roundBoxTitle.trim()} ${winner}` : winner
         setState(s => ({
           ...s,
-          chain: [...s.chain, { text: winner, themeIndex: s.roundIndex }],
+          chain: [...s.chain, { text: composed, themeIndex: s.roundIndex }],
           roundIndex: s.roundIndex + 1,
           activities: [],
           champion: null,
           restQueue: [],
           pair: [],
+          roundBoxTitle: '',
           stage: Stage.Add
         }))
         return
@@ -210,11 +212,11 @@ export default function App(){
         {state.stage === Stage.Add && (
           <section className="card" style={{padding:16, display:'grid', gap:16}}>
             <form onSubmit={(e)=> e.preventDefault()} style={{display:'grid', gap:8}}>
-              <input className="input" placeholder="Titolo di questa box" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} />
+              <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} /></div></div>
             </form>
             <div style={{display:'grid', gap:10}}>
               {state.activities.map((a, i)=> (
-                <div className="item" key={i}>
+                <div className="item activityPill" key={i}>
                   <div className="itemText">{a}</div>
                   <button className="btn" onClick={()=>removeActivity(i)} aria-label="Rimuovi">Rimuovi</button>
                 </div>
