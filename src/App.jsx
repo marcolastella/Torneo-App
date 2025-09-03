@@ -115,10 +115,10 @@ export default function App(){
       if(!state.champion) return
       if(state.restQueue.length === 0){
         const winner = state.champion
-        const composed = (state.roundBoxTitle && state.roundBoxTitle.trim()) ? `${state.roundBoxTitle.trim()} ${winner}` : winner
+        const label = (state.roundBoxTitle && state.roundBoxTitle.trim()) ? state.roundBoxTitle.trim() : ''
         setState(s => ({
           ...s,
-          chain: [...s.chain, { text: composed, themeIndex: s.roundIndex }],
+          chain: [...s.chain, { text: winner, boxTitle: label, themeIndex: s.roundIndex }],
           roundIndex: s.roundIndex + 1,
           activities: [],
           champion: null,
@@ -191,8 +191,11 @@ export default function App(){
             <div className="hint" style={{marginBottom:6}}>Hai scelto:</div>
             <div style={{display:'flex', flexWrap:'nowrap', gap:8, overflowX:'auto', paddingBottom:6}}>
               {state.chain.map((w,i)=> (
-                <span key={i} className="chip" style={{background: chipFor(w.themeIndex), whiteSpace:'nowrap'}}>{w.text}</span>
-              ))}
+              <div key={i} style={{display:'grid', gap:4, placeItems:'center', minWidth:0}}>
+                {w.boxTitle ? <div className="tinyLabel">{w.boxTitle}</div> : null}
+                <span className="chip" style={{background: chipFor(w.themeIndex), whiteSpace:'nowrap'}}>{w.text}</span>
+              </div>
+            ))}
             </div>
             <div className="hint" style={{marginTop:8}}>Hai scartato:</div>
             <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
@@ -210,7 +213,7 @@ export default function App(){
         )}
 
         {state.stage === Stage.Add && (
-          <section className="card" style={{padding:16, display:'grid', gap:16}}>
+          <section className="card cardRainbow" style={{padding:16, display:'grid', gap:16}}>
             <form onSubmit={(e)=> e.preventDefault()} style={{display:'grid', gap:8}}>
               <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} /></div></div>
             </form>
@@ -253,8 +256,11 @@ export default function App(){
             <h2 className="finalTitle">{(phrase || state.baseName)}</h2>
             <div style={{display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center'}}>
               {state.chain.map((w,i)=> (
-                <span key={i} className="chip" style={{background: chipFor(w.themeIndex)}}>{w.text}</span>
-              ))}
+              <div key={i} style={{display:'grid', gap:4, placeItems:'center', minWidth:0}}>
+                {w.boxTitle ? <div className="tinyLabel">{w.boxTitle}</div> : null}
+                <span className="chip" style={{background: chipFor(w.themeIndex), whiteSpace:'nowrap'}}>{w.text}</span>
+              </div>
+            ))}
             </div>
             <div className="row">
               <button className="btn" onClick={sharePhrase} aria-label="Condividi">Condividi</button>

@@ -165,3 +165,23 @@ header{
 .noBorder{ border:none !important; }
 
 .activityPill{ border-radius: 9999px !important; }
+
+.tinyLabel{
+  font-size:11px; opacity:.75; color:var(--fg);
+  padding:4px 8px; border-radius:9999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  white-space:nowrap;
+}
+.cardRainbow{
+  position:relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04)),
+    var(--glass);
+  border: 1px solid rgba(255,255,255,0.20);
+}
+.cardRainbow:before{
+  content:''; position:absolute; inset:0; border-radius:28px; z-index:-1;
+  background: conic-gradient(from 0deg, rgba(125,211,252,.18), rgba(167,139,250,.15), rgba(244,114,182,.14), rgba(251,113,133,.14), rgba(251,191,36,.14), rgba(52,211,153,.14), rgba(125,211,252,.18));
+  filter: blur(18px); opacity:.7;
+}
