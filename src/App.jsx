@@ -98,7 +98,9 @@ export default function App(){
     champion: null,
     restQueue: [],
     pair: [],
-    timerKey: 0
+    timerKey: 0,
+    discarded: [],
+    roundBoxTitle: ''
   })
 
   useTheme(state.roundIndex)
@@ -144,7 +146,7 @@ export default function App(){
     if(!canStart) return
     const shuffled = [...state.activities].sort(()=>Math.random()-.5)
     const champion = shuffled.shift()
-    setState(s => ({...s, champion, restQueue:shuffled, pair:[], stage:Stage.Play, timerKey:(s.timerKey||0)+1 }))
+    setState(s => ({...s, champion, restQueue:shuffled, pair:[], discarded: [], stage:Stage.Play, timerKey:(s.timerKey||0)+1 }))
   }
   const choose = (text) => {
     vibe(12)
@@ -152,7 +154,8 @@ export default function App(){
     const [champ, opp] = state.pair
     const picked = text
     const newChampion = (picked === champ) ? champ : opp
-    setState(s => ({...s, champion:newChampion, restQueue:s.restQueue.slice(1), pair:[] }))
+    const loser = (picked === champ) ? opp : champ
+    setState(s => ({...s, champion:newChampion, restQueue:s.restQueue.slice(1), pair:[], discarded: s.discarded.includes(loser) ? s.discarded : [...s.discarded, loser] }))
   }
   const timeout = () => {
     if(state.pair.length<2) return
@@ -183,20 +186,32 @@ export default function App(){
 
         {(state.stage === Stage.Add || state.stage === Stage.Play) && state.chain.length > 0 && (
           <section className="card" style={{padding:12, marginBottom:8}}>
-            <div className="hint" style={{marginBottom:6}}>Finora:</div>
+            <div className="hint" style={{marginBottom:6}}>Hai scelto:</div>
             <div style={{display:'flex', flexWrap:'nowrap', gap:8, overflowX:'auto', paddingBottom:6}}>
               {state.chain.map((w,i)=> (
                 <span key={i} className="chip" style={{background: chipFor(w.themeIndex), whiteSpace:'nowrap'}}>{w.text}</span>
               ))}
             </div>
-            <div className="hint" style={{marginTop:4, opacity:.9}}>
-              Frase: <span style={{opacity:.95, fontWeight:700, color:'var(--fg)'}}>{state.chain.map(c=>c.text).join(' ')}</span>
+            <div className="hint" style={{marginTop:8}}>Hai scartato:</div>
+            <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+              {state.discarded.length===0 ? (
+                <span className="hint">—</span>
+              ) : (
+                state.discarded.map((t,i)=> (
+                  <span key={i} className="chip chipMuted">{t}</span>
+                ))
+              )}
+            </div>
+            <div className="hint" style={{marginTop:8, opacity:.9}}>Frase scelte: <span style={{opacity:.95, fontWeight:700, color:'var(--fg)'}}>{state.chain.map(c=>c.text).join(' ')}</span>
             </div>
           </section>
         )}
 
         {state.stage === Stage.Add && (
           <section className="card" style={{padding:16, display:'grid', gap:16}}>
+            <form onSubmit={(e)=> e.preventDefault()} style={{display:'grid', gap:8}}>
+              <input className="input" placeholder="Titolo di questa box" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} />
+            </form>
             <div style={{display:'grid', gap:10}}>
               {state.activities.map((a, i)=> (
                 <div className="item" key={i}>
@@ -207,8 +222,8 @@ export default function App(){
             </div>
             <ActivityInput onAdd={addActivity} idx={state.activities.length+1} />
             <div className="row">
-              <button className="btn" onClick={startTournament} disabled={!canStart}>Inizia il torneo</button>
               <button className="btn btn-danger" onClick={()=> setState(s=>({...s, stage:Stage.Final}))}>Termina torneo</button>
+              <button className="btn btn-success" onClick={startTournament} disabled={!canStart}>Inizia il torneo</button>
             </div>
           </section>
         )}
