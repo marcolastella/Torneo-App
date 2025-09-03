@@ -186,6 +186,8 @@ header{
   filter: blur(18px); opacity:.7;
 }
 
+.discardList{ display:flex; flex-wrap:wrap; gap:8px; max-height:140px; overflow:auto; padding-right:6px }
+
 .finalPhrase{ display:flex; flex-wrap:wrap; gap: 8px 12px; justify-content:center; align-items:flex-end; padding:8px 4px }
 .wordWrap{ display:grid; gap:4px; place-items:center; animation: wordIn .35s ease both }
 .wordBig{
@@ -201,5 +203,3 @@ header{
 .tinyLabel{ font-size:11px; opacity:.75; color:var(--fg); padding:4px 8px; border-radius:9999px; border:1px solid rgba(255,255,255,.14); background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); white-space:nowrap }
 .tinyLabelDark{ color:#0e1117 !important; background: linear-gradient(180deg, rgba(255,255,255,.90), rgba(255,255,255,.70)) !important; border-color: rgba(0,0,0,.12) !important }
 @keyframes wordIn{ from{ transform: translateY(6px) scale(.98); opacity:0 } to{ transform: translateY(0) scale(1); opacity:1 } }
-
-.discardList{ display:flex; flex-wrap:wrap; gap:8px; max-height:140px; overflow:auto; padding-right:6px }

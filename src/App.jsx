@@ -116,8 +116,7 @@ export default function App(){
       if(state.restQueue.length === 0){
         const winner = state.champion
         const label = (state.roundBoxTitle && state.roundBoxTitle.trim()) ? state.roundBoxTitle.trim() : ''
-        setState(s => ({
-          ...s,
+        setState(s => ({ ...s, discarded: [],
           chain: [...s.chain, { text: winner, boxTitle: label, themeIndex: s.roundIndex }],
           roundIndex: s.roundIndex + 1,
           activities: [],
@@ -148,7 +147,7 @@ export default function App(){
     if(!canStart) return
     const shuffled = [...state.activities].sort(()=>Math.random()-.5)
     const champion = shuffled.shift()
-    setState(s => ({...s, champion, restQueue:shuffled, pair:[], discarded: [],  discarded: [],stage:Stage.Play, timerKey:(s.timerKey||0)+1 }))
+    setState(s => ({...s, champion, restQueue:shuffled, pair:[], discarded: [], stage:Stage.Play, timerKey:(s.timerKey||0)+1 }))
   }
   const choose = (text) => {
     vibe(12)
