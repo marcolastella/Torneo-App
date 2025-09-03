@@ -5,10 +5,13 @@ const sanitize = s => (s||'').replace(/\s+/g,' ').trim().replace(/[\u0000-\u001f
 const vibe = ms => ('vibrate' in navigator) && navigator.vibrate(ms)
 
 // Persistenza
-const useEphemeralState = (initial) => {
-  const [state, setState] = useState(initial)
-  // clear any previous localStorage keys from older versions on first mount
-  useEffect(()=>{ try{ ['torneo_state_v1','torneo_state_v2','torneo_state_v3'].forEach(k=> localStorage.removeItem(k)) }catch{} },[])
+const STORAGE_KEY = 'torneo_state_v2'
+const usePersistedState = (initial) => {
+  const [state, setState] = useState(()=>{
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : initial }
+    catch { return initial }
+  })
+  useEffect(()=>{ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)) } catch {} }, [state])
   return [state, setState]
 }
 
@@ -86,7 +89,7 @@ function Fanfare(){
 const Stage = { Title:'TITLE', Add:'ADD', Play:'PLAY', Final:'FINAL' }
 
 export default function App(){
-  const [state, setState] = useEphemeralState({
+  const [state, setState] = usePersistedState({
     stage: Stage.Title,
     baseName: '',
     roundIndex: 0,
@@ -105,20 +108,6 @@ export default function App(){
   const phrase = state.chain.map(c=>c.text).join(' ')
   const nextTitle = state.chain.length ? `${state.baseName} ${state.chain[state.chain.length-1].text}` : state.baseName
   const canStart = state.activities.length >= 2
-  // Focus & scroll to Add card when entering ADD
-  useEffect(()=>{
-    if(state.stage === Stage.Add){
-      setTimeout(()=>{
-        try{
-          const el = document.getElementById('addCard')
-          if(el) el.scrollIntoView({behavior:'smooth', block:'start'})
-          const inp = document.getElementById('activity-input')
-          if(inp) inp.focus()
-        }catch{}
-      }, 40)
-    }
-  }, [state.stage, state.roundIndex])
-
 
   useEffect(()=>{
     if(state.stage !== Stage.Play) return
@@ -175,7 +164,6 @@ export default function App(){
     setState(s => ({...s, restQueue:[...s.restQueue.slice(1), s.restQueue[0]], pair:[] }))
   }
   const resetAll = () => {
-    try{ ['torneo_state_v1','torneo_state_v2','torneo_state_v3'].forEach(k=> localStorage.removeItem(k)) }catch{}
     setState({ stage: Stage.Title, baseName:'', roundIndex:0, activities:[], chain:[], champion:null, restQueue:[], pair:[], timerKey:0 })
   }
   const sharePhrase = async () => {
@@ -189,7 +177,7 @@ export default function App(){
     <div>
       <div id="backdrop" className="backdrop" />
       <div className="noise" />
-      <header><div className="brand"><div className="brandIcon"/><div className="brandText">Torneo Attività</div></div><div style={{position:'absolute', right:12}}><button className="btn btn-danger" onClick={resetAll}>Nuovo torneo</button></div></header>
+      <header><div className="brand"><div className="brandIcon"/><div className="brandText">Torneo Attività</div></div></header>
       <main className="container">
 
         {state.stage === Stage.Title && <TitleCard onConfirm={onConfirmTitle} />}
@@ -200,26 +188,47 @@ export default function App(){
 
         {(state.stage === Stage.Add || state.stage === Stage.Play) && state.chain.length > 0 && (
           <section className="card" style={{padding:12, marginBottom:8}}>
+            <div className="hint" style={{marginBottom:6}}>Hai scelto:</div>
+            <div style={{display:'flex', flexWrap:'nowrap', gap:8, overflowX:'auto', paddingBottom:6}}>
+              {state.chain.map((w,i)=> (
+              <div key={i} style={{display:'grid', gap:4, placeItems:'center', minWidth:0}}>
+                {w.boxTitle ? <div className="tinyLabel">{w.boxTitle}</div> : null}
+                <span className="chip" style={{background: chipFor(w.themeIndex), whiteSpace:'nowrap'}}>{w.text}</span>
+              </div>
+            ))}
+            </div>
+            <div className="hint" style={{marginTop:8}}>Hai scartato:</div>
+            <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+              {state.discarded.length===0 ? (
+                <span className="hint">—</span>
+              ) : (
+                state.discarded.map((t,i)=> (
+                  <span key={i} className="chip chipMuted">{t}</span>
+                ))
+              )}
+            </div>
+            <div className="hint" style={{marginTop:8, opacity:.9}}>Frase scelte: <span style={{opacity:.95, fontWeight:700, color:'var(--fg)'}}>{state.chain.map(c=>c.text).join(' ')}</span>
+            </div>
           </section>
         )}
 
-        {(state.stage === Stage.Add || state.stage === Stage.Play) && (
-          <section id="addCard" className="card cardRainbow" style={{padding:16, display:'grid', gap:16}}>
+        {state.stage === Stage.Add && (
+          <section className="card cardRainbow" style={{padding:16, display:'grid', gap:16}}>
             <form onSubmit={(e)=> e.preventDefault()} style={{display:'grid', gap:8}}>
-              <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} disabled={state.stage===Stage.Play} /></div></div>
+              <div className="glassRainbow"><div className="glassInner"><input className="input noBorder" placeholder="Dai un nome a questo sotto-torneo" value={state.roundBoxTitle} onChange={e=> setState(s=>({...s, roundBoxTitle:e.target.value}))} /></div></div>
             </form>
             <div style={{display:'grid', gap:10}}>
               {state.activities.map((a, i)=> (
                 <div className="item activityPill" key={i}>
                   <div className="itemText">{a}</div>
-                  <button className="btn" onClick={()=>removeActivity(i)} aria-label="Rimuovi" disabled={state.stage===Stage.Play}>Rimuovi</button>
+                  <button className="btn" onClick={()=>removeActivity(i)} aria-label="Rimuovi">Rimuovi</button>
                 </div>
               ))}
             </div>
-            <ActivityInput onAdd={addActivity} idx={state.activities.length+1} disabled={state.stage===Stage.Play} />
+            <ActivityInput onAdd={addActivity} idx={state.activities.length+1} />
             <div className="row">
               <button className="btn btn-danger" onClick={()=> setState(s=>({...s, stage:Stage.Final}))}>Termina torneo</button>
-              <button className="btn btn-success" onClick={startTournament} disabled={!canStart || state.stage===Stage.Play}>Inizia il torneo</button>
+              <button className="btn btn-success" onClick={startTournament} disabled={!canStart}>Inizia il torneo</button>
             </div>
           </section>
         )}
@@ -283,33 +292,11 @@ function TitleCard({onConfirm}){
   )
 }
 
-
-function ActivityInput({onAdd, idx, disabled=false}){
+function ActivityInput({onAdd, idx}){
   const [v, setV] = useState('')
-  const submit = (e) => {
-    e.preventDefault()
-    if(disabled) return
-    const t = sanitize(v)
-    if(!t) return
-    onAdd(t)
-    setV('')
-  }
   return (
-    <form onSubmit={submit}>
-      <input
-        id="activity-input"
-        className="input"
-        placeholder={`Attività #${idx} — premi Invio`}
-        value={v}
-        onChange={e=>setV(e.target.value)}
-        enterKeyHint="done"
-        inputMode="text"
-        disabled={disabled}
-      />
-    </form>
-  )
-}
-
+    <form onSubmit={(e)=>{ e.preventDefault(); const t=sanitize(v); if(!t) return; onAdd(t); setV('') }}>
+      <input className="input" placeholder={`Attività #${idx} — premi Invio`}
              value={v} onChange={e=>setV(e.target.value)}
              enterKeyHint="done" inputMode="text" />
     </form>
