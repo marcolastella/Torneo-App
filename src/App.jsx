@@ -216,7 +216,7 @@ export default function App(){
                 </div>
               ))}
             </div>
-            <ActivityInput onAdd={addActivity} idx={state.activities.length+1} />
+            <ActivityInput onAdd={addActivity} idx={state.activities.length+1} disabled={state.stage===Stage.Play} />
             <div className="row">
               <button className="btn btn-danger" onClick={()=> setState(s=>({...s, stage:Stage.Final}))}>Termina torneo</button>
               <button className="btn btn-success" onClick={startTournament} disabled={!canStart || state.stage===Stage.Play}>Inizia il torneo</button>
@@ -283,11 +283,25 @@ function TitleCard({onConfirm}){
   )
 }
 
-function ActivityInput({onAdd, idx}){
+
+function ActivityInput({onAdd, idx, disabled=false}){
   const [v, setV] = useState('')
   return (
-    <form onSubmit={(e)=>{ e.preventDefault(); const t=sanitize(v); if(!t) return; onAdd(t); setV('') }}>
-      <input id="activity-input" className="input" placeholder={`Attività #${idx} — premi Invio`} disabled={state.stage===Stage.Play}
+    <form onSubmit={(e)=>{ e.preventDefault(); if(disabled) return; const t=sanitize(v); if(!t) return; onAdd(t); setV('') }}>
+      <input
+        id="activity-input"
+        className="input"
+        placeholder={`Attività #${idx} — premi Invio`}
+        value={v}
+        onChange={e=>setV(e.target.value)}
+        enterKeyHint="done"
+        inputMode="text"
+        disabled={disabled}
+      />
+    </form>
+  )
+}
+
              value={v} onChange={e=>setV(e.target.value)}
              enterKeyHint="done" inputMode="text" />
     </form>
