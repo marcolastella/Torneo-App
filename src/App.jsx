@@ -284,16 +284,35 @@ function TitleCard({onConfirm}){
 }
 
 
-function ActivityInput({onAdd, idx, disabled=false}){
+
+function ActivityInput({ onAdd, idx, disabled = false }) {
   const [v, setV] = useState('')
+
   const submit = (e) => {
     e.preventDefault()
-    if(disabled) return
+    if (disabled) return
     const t = sanitize(v)
-    if(!t) return
+    if (!t) return
     onAdd(t)
     setV('')
   }
+
+  return (
+    <form onSubmit={submit}>
+      <input
+        id="activity-input"
+        className="input"
+        placeholder={`Attività #${idx} — premi Invio`}
+        value={v}
+        onChange={(e) => setV(e.target.value)}
+        enterKeyHint="done"
+        inputMode="text"
+        disabled={disabled}
+      />
+    </form>
+  )
+}
+
   return (
     <form onSubmit={submit}>
       <input
